@@ -1,21 +1,20 @@
 package com.kilopo.kwitter.controller;
 
-import com.kilopo.kwitter.domain.Role;
 import com.kilopo.kwitter.domain.User;
-import com.kilopo.kwitter.repository.UserRepository;
+import com.kilopo.kwitter.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import java.util.Collections;
 
 @Controller
 public class RegistrationController {
 
+
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @GetMapping("/registration")
     public String registration() {
@@ -24,15 +23,25 @@ public class RegistrationController {
 
     @PostMapping("/registration")
     public String registeruser(User user, Model model) {
-        User userFromDb = userRepository.findByUsername(user.getUsername());
-        if (userFromDb != null) {
+
+
+        if (!userService.addUser(user)) {
             model.addAttribute("message", "User already exists!");
             return "registration";
         }
 
-        user.setActive(true);
-        user.setRoles(Collections.singleton(Role.USER));
-        userRepository.save(user);
         return "redirect:/login";
+    }
+
+    @GetMapping("/activate/{code}")
+    public String activate(Model model, @PathVariable String code) {
+        boolean isActive = userService.activateUser(code);
+
+        if (isActive) {
+            model.addAttribute("message", "User successfully activated!");
+        } else {
+            model.addAttribute("message", "Activation Code is not found!");
+        }
+        return "login";
     }
 }
