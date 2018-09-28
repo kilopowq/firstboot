@@ -1,6 +1,8 @@
 <#import "parts/common.ftl" as c>
+
 <@c.page>
 User editor
+
 <form action="/user" method="post">
     <input type="text" name="username" value="${user.username}">
     <#list roles as role>
